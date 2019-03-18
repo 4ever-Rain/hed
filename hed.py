@@ -257,19 +257,22 @@ def train(train_loader, net, opt, lr_schd, epoch, save_dir):
 def test(test_loader, net, save_dir):
     """ Test procedure. """
     # Create the directories.
-    if not isdir(save_dir):
-        os.makedirs(save_dir)
-    save_png_dir = join(save_dir, 'png')
-    if not isdir(save_png_dir):
-        os.makedirs(save_png_dir)
-    save_mat_dir = join(save_dir, 'mat')
-    if not isdir(save_mat_dir):
-        os.makedirs(save_mat_dir)
+    
     # Switch to evaluation mode.
     net.eval()
     # Generate predictions and save.
+    #data_list = glob.glob('video2/*')
+    #data_list.sort()
+    data_list = ['est_flow_0018.png','est_flow_0019.png']
     assert args.test_batch_size == 1  # Currently only support test batch size 1.
-    for batch_index, images in enumerate(tqdm(test_loader)):
+    
+    for batch_index, images in enumerate(tqdm(data_list)):
+        image = cv2.imread(image_path).astype(np.float32)
+        image = image - np.array((104.00698793,116.66876762,122.67891434))
+        image = np.transpose(image,(2,0,1)) # HWC to CHW.
+        image = image.astype(np.float32)    # To float32.
+        images = torch.from_numpy(image)[None,...]
+        
         images = images.cuda()
         _, _, h, w = images.shape
         preds_list = net(images)
